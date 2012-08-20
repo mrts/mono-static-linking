@@ -5,7 +5,7 @@ CC = cc
 AR = ar cqs
 CLIB = bin/libhello.a
 CFLAGS = -Wall -D_REENTRANT -fPIC
-CSRC = $(wildcard src/*.c)
+CSRC = src/hello.c # $(wildcard src/*.c)
 COBJS = $(patsubst src/%.c, obj/%.o, $(CSRC))
 
 # C# application
@@ -23,6 +23,7 @@ $(TARGET): $(CSHARPEXECUTABLE) $(CLIB)
 	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
 	$(CC) -o $(TARGET) $(CFLAGS) $(GENERATEDSRC) \
 		`pkg-config --cflags --libs mono-2` \
+		-rdynamic \
 		-Wl,-whole-archive -Lbin -lhello -Wl,-no-whole-archive \
 		$(BUNDLEOBJS)
 
@@ -37,7 +38,7 @@ $(CSHARPEXECUTABLE): $(CHARPSRC)
 		$(CSHARPREFERENCES) $(CSHARPFLAGS) $(CHARPSRC)
 
 clean:
-	rm -f $(CSHARPEXECUTABLE) \
-		$(BUNDLEOBJS) $(GENERATEDSRC) \
-		$(CLIB) $(COBJS) \
-		$(TARGET) 
+	rm -f bin/* obj/*
+
+bin/dlopen-self: src/dlopen-self.c
+	$(CC) $(CFLAGS) -rdynamic -o $@ $< -ldl
