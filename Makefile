@@ -23,7 +23,7 @@ $(TARGET): $(CSHARPEXECUTABLE) $(CLIB)
 	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
 	$(CC) -o $(TARGET) $(CFLAGS) $(GENERATEDSRC) \
 		`pkg-config --cflags --libs mono-2` \
-		$(CLIB) \
+		-Wl,-whole-archive -Lbin -lhello -Wl,-no-whole-archive \
 		$(BUNDLEOBJS)
 
 obj/%.o: src/%.c

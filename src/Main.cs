@@ -11,7 +11,7 @@ namespace HelloStaticLinking
         public static void Main (string[] args)
         {
             try {
-                string c_str = Marshal.PtrToStringUni (hello());
+                string c_str = Marshal.PtrToStringAnsi (hello());
                 Console.WriteLine(c_str);
             } catch (Exception e) {
                 Console.Error.WriteLine("Exception: " + e);
