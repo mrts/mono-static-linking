@@ -19,6 +19,8 @@ CHARPSRC = $(wildcard src/*.cs)
 GENERATEDSRC = obj/hello-gen.c
 BUNDLEOBJS = obj/hello-bundles.o
 
+# -all_load/-noall_load should work on Mac
+# instead of -whole-archive/-no-whole-archive
 $(TARGET): $(CSHARPEXECUTABLE) $(CLIB)
 	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
 	$(CC) -o $(TARGET) $(CFLAGS) $(GENERATEDSRC) \
