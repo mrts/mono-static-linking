@@ -4,9 +4,10 @@ TARGET = bin/hello
 CC = cc
 AR = ar cqs
 CLIB = bin/libhello.a
-CFLAGS = -Wall -D_REENTRANT -fPIC
-CSRC = src/hello.c # $(wildcard src/*.c)
+CFLAGS = -Wall # -D_REENTRANT
+CSRC = $(wildcard src/*.c)
 COBJS = $(patsubst src/%.c, obj/%.o, $(CSRC))
+LIBFLAGS = -Lbin -lhello
 
 # C# application
 CSHARPC = dmcs
@@ -19,28 +20,36 @@ CHARPSRC = $(wildcard src/*.cs)
 GENERATEDSRC = obj/hello-gen.c
 BUNDLEOBJS = obj/hello-bundles.o
 
+all: $(TARGET)
+
 # -all_load/-noall_load should work on Mac
-# instead of -whole-archive/-no-whole-archive
-$(TARGET): $(CSHARPEXECUTABLE) $(CLIB)
-	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
+# instead of -whole-archive/-no-whole-archive,
+# unsure about -rdynamic
+$(TARGET): $(GENERATEDSRC) $(CLIB)
 	$(CC) -o $(TARGET) $(CFLAGS) $(GENERATEDSRC) \
 		`pkg-config --cflags --libs mono-2` \
 		-rdynamic \
-		-Wl,-whole-archive -Lbin -lhello -Wl,-no-whole-archive \
+		-Wl,-whole-archive \
+		$(LIBFLAGS) \
+		-Wl,-no-whole-archive \
 		$(BUNDLEOBJS)
 
-obj/%.o: src/%.c
-	$(CC) -c $(CFLAGS) -o $@ $<
-
-$(CLIB): $(COBJS)
-	$(AR) $(CLIB) $(COBJS)
+$(GENERATEDSRC): $(CSHARPEXECUTABLE)
+	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
 
 $(CSHARPEXECUTABLE): $(CHARPSRC)
 	$(CSHARPC) "/out:$(CSHARPEXECUTABLE)" \
 		$(CSHARPREFERENCES) $(CSHARPFLAGS) $(CHARPSRC)
 
+$(CLIB): $(COBJS)
+	$(AR) $(CLIB) $(COBJS)
+
+obj/%.o: src/%.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+
 clean:
 	rm -f bin/* obj/*
 
-bin/dlopen-self: src/dlopen-self.c
-	$(CC) $(CFLAGS) -rdynamic -o $@ $< -ldl
+bin/dlopen-self: src/dlopen-self/dlopen-self.c
+	$(CC) -o $@ $(CFLAGS) -rdynamic $< -ldl
