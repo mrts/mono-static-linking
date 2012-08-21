@@ -26,7 +26,7 @@ Instructions
 
 - If you get the ``System.EntryPointNotFoundException: {{symbol name}}``
   exception, then the ``{{symbol name}}`` symbol is missing from the
-  binary. You can list the symbols included in the binary with ``nm
+  binary. You can list the symbols included in the binary with ``nm --dynamic
   {{binary}} | grep {{symbol name}}`` (C++ symbols need demangling as well).
 
 .. _`ordinary P/Invoke declarations`: https://github.com/mrts/mono-static-linking/blob/master/src/Main.cs
