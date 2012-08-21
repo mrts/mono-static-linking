@@ -27,12 +27,12 @@ all: $(TARGET)
 # use -force_load on Mac instead of -whole-archive, see README.rst
 $(TARGET): $(GENERATEDSRC) $(CLIB)
 	$(CC) -o $(TARGET) $(CFLAGS) $(GENERATEDSRC) \
-		`pkg-config --cflags --libs mono-2` \
 		-rdynamic \
 		-Wl,-whole-archive \
 		$(LIBFLAGS) \
 		-Wl,-no-whole-archive \
-		$(BUNDLEOBJS)
+		$(BUNDLEOBJS) \
+		`pkg-config --cflags --libs mono-2`
 
 $(GENERATEDSRC): $(CSHARPEXECUTABLE) | $(OBJDIR)
 	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
