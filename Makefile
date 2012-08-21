@@ -1,24 +1,26 @@
-TARGET = bin/hello
+BINDIR = bin
+TARGET = $(BINDIR)/hello
 
 # C library
 CC = cc
 AR = ar cqs
-CLIB = bin/libhello.a
+CLIB = $(BINDIR)/libhello.a
 CFLAGS = -Wall -s -O2 -Wl,-O1 # -D_REENTRANT
 CSRC = $(wildcard src/*.c)
-COBJS = $(patsubst src/%.c, obj/%.o, $(CSRC))
-LIBFLAGS = -Lbin -lhello
+OBJDIR = obj
+COBJS = $(patsubst src/%.c, $(OBJDIR)/%.o, $(CSRC))
+LIBFLAGS = -L$(BINDIR) -lhello
 
 # C# application
 CSHARPC = dmcs
-CSHARPEXECUTABLE = bin/Hello.exe
+CSHARPEXECUTABLE = $(BINDIR)/Hello.exe
 CSHARPREFERENCES = /r:System.dll
 CSHARPFLAGS = /nologo /warn:4 /optimize+ /codepage:utf8 /t:exe
 CHARPSRC = $(wildcard src/*.cs)
 
 # mkbundle
-GENERATEDSRC = obj/hello-gen.c
-BUNDLEOBJS = obj/hello-bundles.o
+GENERATEDSRC = $(OBJDIR)/hello-gen.c
+BUNDLEOBJS = $(OBJDIR)/hello-bundles.o
 
 all: $(TARGET)
 
@@ -32,22 +34,27 @@ $(TARGET): $(GENERATEDSRC) $(CLIB)
 		-Wl,-no-whole-archive \
 		$(BUNDLEOBJS)
 
-$(GENERATEDSRC): $(CSHARPEXECUTABLE)
+$(GENERATEDSRC): $(CSHARPEXECUTABLE) | $(OBJDIR)
 	mkbundle -c -o $(GENERATEDSRC) -oo $(BUNDLEOBJS) $(CSHARPEXECUTABLE)
 
-$(CSHARPEXECUTABLE): $(CHARPSRC)
+$(CSHARPEXECUTABLE): $(CHARPSRC) | $(BINDIR)
 	$(CSHARPC) "/out:$(CSHARPEXECUTABLE)" \
 		$(CSHARPREFERENCES) $(CSHARPFLAGS) $(CHARPSRC)
 
 $(CLIB): $(COBJS)
 	$(AR) $(CLIB) $(COBJS)
 
-obj/%.o: src/%.c
+$(OBJDIR)/%.o: src/%.c
 	$(CC) -c -o $@ $(CFLAGS) $<
 
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
 
 clean:
-	rm -f bin/* obj/*
+	rm -rf $(OBJDIR) $(BINDIR)
 
-bin/dlopen-self: src/dlopen-self/dlopen-self.c
+bin/dlopen-self: src/dlopen-self/dlopen-self.c | $(BINDIR)
 	$(CC) -o $@ $(CFLAGS) -rdynamic $< -ldl
