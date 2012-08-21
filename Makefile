@@ -4,7 +4,7 @@ TARGET = bin/hello
 CC = cc
 AR = ar cqs
 CLIB = bin/libhello.a
-CFLAGS = -Wall # -D_REENTRANT
+CFLAGS = -Wall -s -O2 -Wl,-O1 # -D_REENTRANT
 CSRC = $(wildcard src/*.c)
 COBJS = $(patsubst src/%.c, obj/%.o, $(CSRC))
 LIBFLAGS = -Lbin -lhello
@@ -22,9 +22,7 @@ BUNDLEOBJS = obj/hello-bundles.o
 
 all: $(TARGET)
 
-# -all_load/-noall_load should work on Mac
-# instead of -whole-archive/-no-whole-archive,
-# unsure about -rdynamic
+# use -force_load on Mac instead of -whole-archive, see README.rst
 $(TARGET): $(GENERATEDSRC) $(CLIB)
 	$(CC) -o $(TARGET) $(CFLAGS) $(GENERATEDSRC) \
 		`pkg-config --cflags --libs mono-2` \
